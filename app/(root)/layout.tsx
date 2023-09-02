@@ -13,8 +13,8 @@ import Topbar from "@/components/shared/Topbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Threads",
-  description: "A Next.js 13 Meta Threads application",
+  title: "Tiphub",
+  description: "Tiphub is your go-to social media platform for sharing and discovering well-being tips and insights. Whether you're passionate about mental health, fitness, nutrition, mindfulness, or any other well-being topic, WellTip connects you with a supportive global community. Share your knowledge, find inspiration, and explore a world of valuable well-being advice from experts and enthusiasts.",
 };
 
 export default function RootLayout({
