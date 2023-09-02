@@ -6,7 +6,7 @@ import { connectToDB } from "../mongoose";
 
 import User from "../models/user.model";
 import Thread from "../models/thread.model";
-// import Community from "../models/community.model";
+import Community from "../models/community.model";
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   connectToDB();
@@ -23,10 +23,10 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
       path: "author",
       model: User,
     })
-    // .populate({
-    //   path: "community",
-    //   model: Community,
-    // })
+    .populate({
+      path: "community",
+      model: Community,
+    })
     .populate({
       path: "children", // Populate the children field
       populate: {
@@ -60,10 +60,10 @@ export async function createThread({ text, author, communityId, path }: Params
   try {
     connectToDB();
 
-    // const communityIdObject = await Community.findOne(
-    //   { id: communityId },
-    //   { _id: 1 }
-    // );
+    const communityIdObject = await Community.findOne(
+      { id: communityId },
+      { _id: 1 }
+    );
 
     const createdThread = await Thread.create({
       text,
@@ -76,12 +76,12 @@ export async function createThread({ text, author, communityId, path }: Params
       $push: { threads: createdThread._id },
     });
 
-    // if (communityIdObject) {
-    //   // Update Community model
-    //   await Community.findByIdAndUpdate(communityIdObject, {
-    //     $push: { threads: createdThread._id },
-    //   });
-    // }
+    if (communityIdObject) {
+      // Update Community model
+      await Community.findByIdAndUpdate(communityIdObject, {
+        $push: { threads: createdThread._id },
+      });
+    }
 
     revalidatePath(path);
   } catch (error: any) {
@@ -89,17 +89,17 @@ export async function createThread({ text, author, communityId, path }: Params
   }
 }
 
-// async function fetchAllChildThreads(threadId: string): Promise<any[]> {
-//   const childThreads = await Thread.find({ parentId: threadId });
+async function fetchAllChildThreads(threadId: string): Promise<any[]> {
+  const childThreads = await Thread.find({ parentId: threadId });
 
-//   const descendantThreads = [];
-//   for (const childThread of childThreads) {
-//     const descendants = await fetchAllChildThreads(childThread._id);
-//     descendantThreads.push(childThread, ...descendants);
-//   }
+  const descendantThreads = [];
+  for (const childThread of childThreads) {
+    const descendants = await fetchAllChildThreads(childThread._id);
+    descendantThreads.push(childThread, ...descendants);
+  }
 
-//   return descendantThreads;
-// }
+  return descendantThreads;
+}
 
 // export async function deleteThread(id: string, path: string): Promise<void> {
 //   try {
@@ -167,11 +167,11 @@ export async function fetchThreadById(threadId: string) {
         model: User,
         select: "_id id name image",
       }) // Populate the author field with _id and username
-      // .populate({
-      //   path: "community",
-      //   model: Community,
-      //   select: "_id id name image",
-      // }) // Populate the community field with _id and name
+      .populate({
+        path: "community",
+        model: Community,
+        select: "_id id name image",
+      }) // Populate the community field with _id and name
       .populate({
         path: "children", // Populate the children field
         populate: [
